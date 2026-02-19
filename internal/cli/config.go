@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 )
 
 type Config struct {
@@ -18,7 +19,7 @@ func loadConfig() (Config, error) {
 	if err != nil {
 		if os.IsNotExist(err) {
 			cfg.GameDirRoot = defaultGameDirRoot()
-			cfg.LauncherDir = cfg.GameDirRoot
+			cfg.LauncherDir = defaultLauncherDir()
 			return cfg, nil
 		}
 		return cfg, err
@@ -30,7 +31,7 @@ func loadConfig() (Config, error) {
 		cfg.GameDirRoot = defaultGameDirRoot()
 	}
 	if cfg.LauncherDir == "" {
-		cfg.LauncherDir = cfg.GameDirRoot
+		cfg.LauncherDir = defaultLauncherDir()
 	}
 	return cfg, nil
 }
@@ -75,4 +76,27 @@ func defaultGameDirRoot() string {
 		return "./minecraft"
 	}
 	return filepath.Join(home, ".minecraft")
+}
+
+func defaultLauncherDir() string {
+	if v := os.Getenv("ARIADNE_LAUNCHER_DIR"); v != "" {
+		return v
+	}
+	switch runtime.GOOS {
+	case "windows":
+		if appdata := os.Getenv("APPDATA"); appdata != "" {
+			return filepath.Join(appdata, ".minecraft")
+		}
+	case "darwin":
+		home, err := os.UserHomeDir()
+		if err == nil && home != "" {
+			return filepath.Join(home, "Library", "Application Support", "minecraft")
+		}
+	default:
+		home, err := os.UserHomeDir()
+		if err == nil && home != "" {
+			return filepath.Join(home, ".minecraft")
+		}
+	}
+	return defaultGameDirRoot()
 }

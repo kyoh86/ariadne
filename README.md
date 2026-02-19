@@ -34,6 +34,8 @@ go build -o bin/ariadne ./cmd/ariadne
 ./bin/ariadne config set-launcher-dir /mnt/d/minecraft
 ```
 
+`launcher-dir` の既定値は OS 標準です（Windows では `%APPDATA%\\.minecraft`）。
+
 2. プロファイル作成
 
 ```bash
